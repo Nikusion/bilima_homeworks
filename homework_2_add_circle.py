@@ -1,7 +1,7 @@
 import math
 
 def search_point_circle(center, radius, point):
-    segment = math.sqrt((center[0]-point[0])**2-(center[1]-point[1])**2)
+    segment = math.sqrt((center[0]-point[0])**2+(center[1]-point[1])**2)
     if radius - segment > 0:
         print('Point enters the circle.')
     elif radius - segment == 0:
