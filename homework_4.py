@@ -29,7 +29,7 @@ res_1 = task_2_2(**task_2_args)
 res_2 = task_2_2(**task_2_args_2)
 print('\n\tResult of task 2 with return: ')
 print(f"Number of arguments passed: {res_1[0]}. \nUser_type: {res_1[1]}.")
-print(f"Number of arguments passed: {res_2[0]}. \nUser_type: {res_2[0]}.")
+print(f"Number of arguments passed: {res_2[0]}. \nUser_type: {res_2[1]}.")
 
 
 def func_f(val_1):
@@ -42,6 +42,7 @@ def func_f(val_1):
 print('\n\tResult of task 4 (args = 6,3): ')
 print(func_f(6)(3))
 
+print('\n\tResult of task 5 (size 5): ')
 def print_square(size, count):
     if size < 1 or count == 0:
         return
