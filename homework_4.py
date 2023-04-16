@@ -1,8 +1,8 @@
 """Module that provides doing homework 4"""
 def main():
     """Homework"""
-    def unique_val(*numbers):
-        return list(set(numbers))
+    def unique_val(*args):
+        return list(set(args))
 
 
     print('\tResult of task 1: ')
