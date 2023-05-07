@@ -3,7 +3,9 @@ import json
 
 
 class JsonParser:
+    """This class converts JSON objects to Python objects."""
     def json_to_python(self):
+        """This function formats objects."""
         return json.loads(self.data)
 
     def __init__(self, data):
@@ -17,20 +19,24 @@ class JsonParser:
 
 
 class Point:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
+    """This class accepts the coordinates of a point in a plane."""
+    def __init__(self, coord_x, coord_y):
+        self.coord_x = coord_x
+        self.coord_y = coord_y
 
     def as_tuple(self):
-        return (self.x, self.y)
+        """This function converts the coordinates to a tuple."""
+        return (self.coord_x, self.coord_y)
 
 
 class Rectangle:
-    def __init__(self, start_point, end_point):
-        self.start_point = start_point.as_tuple()
-        self.end_point = end_point.as_tuple()
+    """This class accepts two rectangle vertices."""
+    def __init__(self, start_p, end_p):
+        self.start_point = start_p.as_tuple()
+        self.end_point = end_p.as_tuple()
 
     def contains(self, point):
+        """This function determines whether a point is inside a rectangle."""
         point = point.as_tuple()
         if self.start_point[0] <= point[0] <= self.end_point[0] and \
                 self.start_point[1] <= point[1] <= self.end_point[1]:
@@ -48,6 +54,7 @@ class Rectangle:
             list_2.append(i)
         if point[0] in list_1 and point[1] in list_2:
             return True
+        return False
 
 
 if __name__ == '__main__':
@@ -69,4 +76,3 @@ if __name__ == '__main__':
     assert Point(-1, 3) not in rect
     assert Point(0, 3) not in rect
     assert Point(4, 2) in rect
-
