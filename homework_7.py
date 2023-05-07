@@ -1,6 +1,8 @@
 """Module that provides doing homework 7"""
 
 import random
+from os import path
+from collections import defaultdict
 
 
 def retry(attempts=5, desired_value=None):
@@ -51,6 +53,7 @@ def get_random_values(choices, size=2):
 
 
 def write_to_file(path):
+    """This function writes to a file."""
     file = open(path, 'w')  # w = write, r = read
     file.write('skhfbsdhfb\n')
     file.flush()
@@ -60,10 +63,32 @@ def write_to_file(path):
     file.flush()
     file.close()
 
+
 def copy_contents(path_1, path_2):
+    """This function copies the contents of one file to another."""
     with open(path_1, 'r') as file_1, open(path_2, 'w') as file_2:
         for line in file_1:
             file_2.write(line)
+
+
+def read_big_file(big_f):
+    """This function reads a large file and
+    returns a dictionary with its size,
+    number of lines, and top 3 repeating characters."""
+    with open(big_f, 'r') as file:
+        line_count = 0
+        all_symbols = ''
+        for line in file:
+            line_count += 1
+            symbols = line.replace(' ', '')
+            all_symbols += symbols
+        counted_chars = defaultdict(int)
+        for symbol in all_symbols:
+            counted_chars[symbol] += 1
+        counted_chars_sort = sorted(counted_chars.items(), key=lambda k: k[1], reverse=True)
+    return {'Number of lines in the file:' : line_count,
+            'File size in bytes': path.getsize(big_f),
+            'Top 3 characters in the file:': counted_chars_sort[:3]}
 
 
 if __name__ == '__main__':
@@ -79,5 +104,4 @@ if __name__ == '__main__':
 
     write_to_file('file.txt')
     copy_contents('file.txt', 'file_copy.txt')
-
-
+    print('\n', read_big_file('big.txt'))
