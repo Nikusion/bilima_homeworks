@@ -36,7 +36,9 @@ class Rectangle:
             return True
         return False
 
-
+    def __contains__(self, point):
+        point = point.as_tuple()
+        pass
 
 
 if __name__ == '__main__':
@@ -54,5 +56,6 @@ if __name__ == '__main__':
     rect = Rectangle(start_point, end_point)
     assert rect.contains(start_point)
     assert not rect.contains(Point(-1, 3))
-    # assert start_point in rect
-    # assert Point(-1, 3) not in rect
+
+    assert start_point in rect
+    assert Point(-1, 3) not in rect
