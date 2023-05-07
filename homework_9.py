@@ -37,7 +37,6 @@ class Rectangle:
         return False
 
     def __contains__(self, point):
-        point = point.as_tuple()
         pass
 
 
