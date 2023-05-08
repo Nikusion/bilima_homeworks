@@ -45,14 +45,8 @@ class Rectangle:
 
     def __contains__(self, point):
         point = point.as_tuple()
-        list_1 = []
-        list_2 = []
-        k = self.start_point[0]
-        for k in range(self.start_point[0], self.end_point[0] + 1):
-            list_1.append(k)
-        for i in range(self.start_point[1], self.end_point[1] + 1):
-            list_2.append(i)
-        if point[0] in list_1 and point[1] in list_2:
+        if self.start_point[0] <= point[0] <= self.end_point[0] and \
+                self.start_point[1] <= point[1] <= self.end_point[1]:
             return True
         return False
 
@@ -76,3 +70,4 @@ if __name__ == '__main__':
     assert Point(-1, 3) not in rect
     assert Point(0, 3) not in rect
     assert Point(4, 2) in rect
+    assert Point(4.3, 2.2) in rect
