@@ -44,11 +44,7 @@ class Rectangle:
         return False
 
     def __contains__(self, point):
-        point = point.as_tuple()
-        if self.start_point[0] <= point[0] <= self.end_point[0] and \
-                self.start_point[1] <= point[1] <= self.end_point[1]:
-            return True
-        return False
+        return self.contains(point)
 
 
 if __name__ == '__main__':
