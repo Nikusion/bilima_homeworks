@@ -75,9 +75,29 @@ class App:
         course['students'].append({'surname': surname, 'name': name})
 
     def show_courses(self):
-        print("Courses:")
-        for course_name in self.file_storage.data:
-            print(course_name)
+        course_list = list(self.file_storage.data.keys())
+        paginator = Pagination(course_list)
+        while True:
+            try:
+                print(f"Courses (page {paginator.current_page + 1}):")
+                for course_name in next(paginator):
+                    print(course_name)
+                print("Menu:")
+                print("1 - Previous page")
+                print("2 - Next page")
+                print("3 - Back to main menu")
+                choice = int(input("Choose menu item: "))
+                if choice == 1:
+                    paginator.prev()
+                elif choice == 2:
+                    paginator.next()
+                elif choice == 3:
+                    break
+                else:
+                    print("No such menu item. Try again!")
+            except StopIteration:
+                print('No such pages!')
+                break
 
     def show_students(self, course_name):
         course = self.file_storage.data[course_name]
@@ -104,6 +124,7 @@ class App:
                     print("No such menu item. Try again!")
             except StopIteration:
                 print('No such pages!')
+                break
 
     def run(self):
         while True:
