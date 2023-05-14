@@ -1,6 +1,3 @@
-'''Поки можу тільки записувати курси і студентів у файл, переключатись між сторінками,
-але коли звертаюсь до вже існуючого файлу, викидає помилку, працюю над вирішенням проблеми.'''
-
 import json
 
 
@@ -37,41 +34,41 @@ class Pagination:
 
 
 class FileStorage:
-    def __init__(self, file_path):
+    def __init__(self, data, file_path):
+        self.data = data
         self.file_path = file_path
-        self.data = {}
 
-    @staticmethod
-    def load_from_file(file_path):
-        file_storage = FileStorage(file_path)
+    @classmethod
+    def load_from_file(cls, file_path):
         try:
             with open(file_path, 'r') as file:
                 data = json.load(file)
-                courses = data.get('courses', {})
-                for course_name, course_data in courses.items():
-                    students = set(course_data.get('students', []))
-                    course_data['students'] = students
-                    file_storage.data[course_name] = course_data
         except FileNotFoundError:
-            pass
-        return file_storage
+            data = {}
+        for course_data in data.values():
+            course_data['students'] = {tuple(student.items()) for student in course_data.get('students', [])}
+
+        return cls(data, file_path)
 
     def save(self):
-        data = {'courses': self.data}
         with open(self.file_path, 'w') as file:
-            json.dump(data, file)
+            json.dump(self.data, file, default=lambda x: list(x) if isinstance(x, set) else x)
 
 
 class App:
     def __init__(self, file_storage):
         self.file_storage = file_storage
 
+    def add_course(self, course_name):
+        self.file_storage.data[course_name] = {}
+        self.file_storage.save()
+
     def add_student(self, course_name):
         course = self.file_storage.data[course_name]
+        if 'students' not in course.keys():
+            course['students'] = []
         surname = input("Enter student's surname: ")
         name = input("Enter student's name: ")
-        if 'students' not in course:
-            course['students'] = []
         course['students'].append({'surname': surname, 'name': name})
 
     def show_courses(self):
@@ -138,24 +135,22 @@ class App:
                 choice = int(input("Choose menu item: "))
                 if choice == 1:
                     course_name = input("Enter course name: ")
-                    self.file_storage.data[course_name] = {}
+                    self.add_course(course_name)
                 elif choice == 2:
                     self.show_courses()
                 elif choice == 3:
                     course_name = input("Enter course name: ")
                     if course_name not in self.file_storage.data:
                         print(f"Error: Course '{course_name}' not found!")
-                    else:
-                        self.add_student(course_name)
-                        self.file_storage.save()
+                        continue
+                    self.add_student(course_name)
                 elif choice == 4:
                     course_name = input("Enter course name: ")
                     if course_name not in self.file_storage.data:
                         print(f"Error: Course '{course_name}' not found!")
-                    else:
-                        self.show_students(course_name)
+                        continue
+                    self.show_students(course_name)
                 elif choice == 5:
-                    print("Exiting...")
                     break
                 else:
                     print("No such menu item. Try again!")
