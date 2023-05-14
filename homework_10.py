@@ -46,7 +46,7 @@ class FileStorage:
         except FileNotFoundError:
             data = {}
         for course_data in data.values():
-            course_data['students'] = {tuple(student.items()) for student in course_data.get('students', [])}
+            course_data['students'] = [dict(student) for student in course_data.get('students', [])]
 
         return cls(data, file_path)
 
@@ -70,6 +70,7 @@ class App:
         surname = input("Enter student's surname: ")
         name = input("Enter student's name: ")
         course['students'].append({'surname': surname, 'name': name})
+        self.file_storage.save()
 
     def show_courses(self):
         course_list = list(self.file_storage.data.keys())
