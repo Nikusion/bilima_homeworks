@@ -38,7 +38,7 @@ class FileStorage:
         self.data = data
         self.file_path = file_path
 
-    @classmethod
+    @staticmethod
     def load_from_file(cls, file_path):
         try:
             with open(file_path, 'r') as file:
