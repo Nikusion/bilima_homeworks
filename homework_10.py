@@ -6,6 +6,11 @@ class Pagination:
         self.items = items
         self.page_size = page_size
         self.current_page = 0
+        length = len(self.items)
+        if length == 0:
+            self.total_pages = 0
+        else:
+            self.total_pages = (length - 1) // self.page_size + 1
 
     def __iter__(self):
         return self
@@ -39,9 +44,11 @@ class FileStorage:
         try:
             with open(file_path, 'r') as file:
                 data = json.load(file)
-                file_storage.data = data.get('courses', {})
-                for course_name, course_data in file_storage.data.items():
-                    course_data['students'] = set(course_data.get('students', []))
+                courses = data.get('courses', {})
+                for course_name, course_data in courses.items():
+                    students = set(course_data.get('students', []))
+                    course_data['students'] = students
+                    file_storage.data[course_name] = course_data
         except FileNotFoundError:
             pass
         return file_storage
@@ -60,7 +67,9 @@ class App:
         course = self.file_storage.data[course_name]
         surname = input("Enter student's surname: ")
         name = input("Enter student's name: ")
-        course[surname] = name
+        if 'students' not in course:
+            course['students'] = []
+        course['students'].append({'surname': surname, 'name': name})
 
     def show_courses(self):
         print("Courses:")
@@ -69,9 +78,29 @@ class App:
 
     def show_students(self, course_name):
         course = self.file_storage.data[course_name]
-        print(f"Students in {course_name}:")
-        for surname, name in course.items():
-            print(f"{surname} {name}")
+        students = course.get('students', [])
+        student_list = [(student['surname'], student['name']) for student in students]
+        paginator = Pagination(student_list)
+        while True:
+            try:
+                print(f"Students in {course_name} (page {paginator.current_page + 1}):")
+                for surname, name in next(paginator):
+                    print(f"{surname} {name}")
+                print("Menu:")
+                print("1 - Previous page")
+                print("2 - Next page")
+                print("3 - Back to main menu")
+                choice = int(input("Choose menu item: "))
+                if choice == 1:
+                    paginator.prev()
+                elif choice == 2:
+                    paginator.next()
+                elif choice == 3:
+                    break
+                else:
+                    print("No such menu item. Try again!")
+            except StopIteration:
+                print('No such pages!')
 
     def run(self):
         while True:
@@ -90,23 +119,24 @@ class App:
                     self.show_courses()
                 elif choice == 3:
                     course_name = input("Enter course name: ")
-                    if course_name in self.file_storage.data:
-                        self.add_student(course_name)
+                    if course_name not in self.file_storage.data:
+                        print(f"Error: Course '{course_name}' not found!")
                     else:
-                        print(f"Course {course_name} does not exist!")
+                        self.add_student(course_name)
+                        self.file_storage.save()
                 elif choice == 4:
                     course_name = input("Enter course name: ")
-                    if course_name in self.file_storage.data:
-                        self.show_students(course_name)
+                    if course_name not in self.file_storage.data:
+                        print(f"Error: Course '{course_name}' not found!")
                     else:
-                        print(f"Course {course_name} does not exist!")
+                        self.show_students(course_name)
                 elif choice == 5:
-                    self.file_storage.save()
+                    print("Exiting...")
                     break
                 else:
-                    print('No such a menu item. Try again!')
+                    print("No such menu item. Try again!")
             except ValueError:
-                print('Input must be integer!')
+                print("Invalid input. Try again!")
 
 
 if __name__ == '__main__':
