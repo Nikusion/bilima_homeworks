@@ -39,20 +39,20 @@ class FileStorage:
         self.file_path = file_path
 
     @staticmethod
-    def load_from_file(cls, file_path):
+    def load_from_file(file_path):
         try:
             with open(file_path, 'r') as file:
                 data = json.load(file)
         except FileNotFoundError:
             data = {}
         for course_data in data.values():
-            course_data['students'] = [dict(student) for student in course_data.get('students', [])]
-
-        return cls(data, file_path)
+            course_data['students'] = list(course_data.get('students', []))
+        return FileStorage(data, file_path)
 
     def save(self):
         with open(self.file_path, 'w') as file:
             json.dump(self.data, file, default=lambda x: list(x) if isinstance(x, set) else x)
+
 
 
 class App:
