@@ -33,6 +33,24 @@ class Pagination:
             self.current_page += 1
 
 
+class Student:
+    def __init__(self, surname, name):
+        self.surname = surname
+        self.name = name
+
+
+class Course:
+    def __init__(self, name):
+        self.name = name
+        self.students = []
+
+    def add_student(self, student):
+        self.students.append(student)
+
+    def get_student_list(self):
+        return [(student.surname, student.name) for student in self.students]
+
+
 class FileStorage:
     def __init__(self, data, file_path):
         self.data = data
@@ -46,13 +64,14 @@ class FileStorage:
         except FileNotFoundError:
             data = {}
         for course_data in data.values():
-            course_data['students'] = list(course_data.get('students', []))
+            course_data['students'] = [Student(s['surname'], s['name']) for s in course_data.get('students', [])]
         return FileStorage(data, file_path)
 
     def save(self):
+        for course_data in self.data.values():
+            course_data['students'] = [s.__dict__ for s in course_data.get('students', [])]
         with open(self.file_path, 'w') as file:
             json.dump(self.data, file, default=lambda x: list(x) if isinstance(x, set) else x)
-
 
 
 class App:
@@ -60,17 +79,29 @@ class App:
         self.file_storage = file_storage
 
     def add_course(self, course_name):
-        self.file_storage.data[course_name] = {}
+        self.file_storage.data[course_name] = {'students': []}
         self.file_storage.save()
 
     def add_student(self, course_name):
-        course = self.file_storage.data[course_name]
-        if 'students' not in course.keys():
-            course['students'] = []
-        surname = input("Enter student's surname: ")
-        name = input("Enter student's name: ")
-        course['students'].append({'surname': surname, 'name': name})
-        self.file_storage.save()
+        course_data = self.file_storage.data[course_name]
+        course = Course(course_name)
+        course.students = course_data.get('students', [])
+        while True:
+            try:
+                num_students = int(input("Enter the number of students you want to add: "))
+                if num_students >= 1:
+                    for i in range(num_students):
+                        surname = input(f"Enter student {i + 1}'s surname: ")
+                        name = input(f"Enter student {i + 1}'s name: ")
+                        student = Student(surname, name)
+                        course.add_student(student)
+                    self.file_storage.data[course_name]['students'] = course.students
+                    self.file_storage.save()
+                    break
+                else:
+                    print("The number of students must be greater than or equal to 1.")
+            except ValueError:
+                print("Input must be integer!")
 
     def show_courses(self):
         course_list = list(self.file_storage.data.keys())
@@ -94,7 +125,7 @@ class App:
                 else:
                     print("No such menu item. Try again!")
             except StopIteration:
-                print('No such pages!')
+                print('No more pages!')
                 break
 
     def show_students(self, course_name):
@@ -121,7 +152,7 @@ class App:
                 else:
                     print("No such menu item. Try again!")
             except StopIteration:
-                print('No such pages!')
+                print('No more pages!')
                 break
 
     def run(self):
@@ -142,13 +173,13 @@ class App:
                 elif choice == 3:
                     course_name = input("Enter course name: ")
                     if course_name not in self.file_storage.data:
-                        print(f"Error: Course '{course_name}' not found!")
+                        print(f"Course '{course_name}' not found!")
                         continue
                     self.add_student(course_name)
                 elif choice == 4:
                     course_name = input("Enter course name: ")
                     if course_name not in self.file_storage.data:
-                        print(f"Error: Course '{course_name}' not found!")
+                        print(f"Course '{course_name}' not found!")
                         continue
                     self.show_students(course_name)
                 elif choice == 5:
@@ -156,7 +187,7 @@ class App:
                 else:
                     print("No such menu item. Try again!")
             except ValueError:
-                print("Invalid input. Try again!")
+                print("Input must be integer!")
 
 
 if __name__ == '__main__':
