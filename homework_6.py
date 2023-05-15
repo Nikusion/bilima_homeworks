@@ -41,7 +41,7 @@ def password_cracker():
             start = time.time()
             password_checker(cracked_password + letter)
             end = time.time()
-            if end - start > len(cracked_password + letter) * 0.1:
+            if end - start > (len(cracked_password) + 1) * 0.1:
                 cracked_password += letter
                 break
     return cracked_password
