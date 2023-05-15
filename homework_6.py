@@ -7,28 +7,20 @@ import time
 def sum_of_list_items(arr):
     """A recursive function that returns the sum of values
     in a list (elements can be of integer type or list)"""
-    if len(arr) == 1:
-        return arr[0]
-    new_arr = []
+    total = 0
     for item in arr:
-        if isinstance(item, list):
-            for items in item:
-                new_arr.append(items)
-        else:
-            new_arr.append(item)
-    return new_arr[0] + sum_of_list_items(new_arr[1:])
+        if isinstance(item, int):
+            total += item
+        elif isinstance(item, list):
+            total += sum_of_list_items(item)
+
+    return total
 
 
 def cycle_words(values, size):
     """A function that returns a list of existing
     elements repeated a given number of times."""
-    arr = []
-    while len(arr) < size:
-        for value in values:
-            arr.append(value)
-            if len(arr) >= size:
-                break
-    return arr
+    return [values[i % len(values)] for i in range(size)]
 
 
 def password_checker(password):
@@ -43,29 +35,26 @@ def password_cracker():
     """A function that selects a password.
     Selects based on the function password_checker()."""
     symbols = string.ascii_letters
-    cracked_password = []
+    cracked_password = ''
     for k in range(4):
         for letter in symbols:
             start = time.time()
-            cracked_password.append(letter)
-            password_checker(cracked_password)
+            password_checker(cracked_password + letter)
             end = time.time()
-            if end - start > len(cracked_password) * 0.1:
+            if end - start > len(cracked_password + letter) * 0.1:
+                cracked_password += letter
                 break
-            cracked_password.pop()
-    return ''.join(str(k) for k in cracked_password)
+    return cracked_password
 
 
 if __name__ == '__main__':
-    list_items = [1, 2, [3, [4, 5, [6, 7]], 8]]
-    print(sum_of_list_items(list_items))
+    assert sum_of_list_items([]) == 0
+    assert sum_of_list_items([1, 2]) == 3
+    assert sum_of_list_items([1, [2, 3, [4], [5, 6, [7]]]]) == 28
 
-    arr_string = ['a', 'b', 'c']
-
-    print(cycle_words(arr_string, 5))
+    assert cycle_words(['a', 'b', 'c'], 7) == ['a', 'b', 'c', 'a', 'b', 'c', 'a']
+    assert cycle_words(['a', 'b', 'c'], 1) == ['a']
+    assert cycle_words(['a', 'b', 'c'], 0) == []
 
     PASSWORD = ''.join(random.choices(string.ascii_letters, k=4))
-
-    print(PASSWORD)
-
-    print(password_cracker())
+    assert password_cracker() == PASSWORD
