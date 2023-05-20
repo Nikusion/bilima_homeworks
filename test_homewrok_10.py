@@ -1,8 +1,42 @@
 import unittest
-import json
-from homework_10 import Pagination
-from tempfile import NamedTemporaryFile
+from homework_10 import Pagination, FileStorage, Student, Course, App
 import os
+from unittest.mock import patch
+from io import StringIO
+
+
+class FileStorageTest(unittest.TestCase):
+    FILE_PATH = 'test_file.json'
+
+    def setUp(self):
+        self.data = {
+            'course1': {
+                'students': [
+                    {'surname': 'Smith', 'name': 'John'},
+                    {'surname': 'Doe', 'name': 'Jane'}
+                ]
+            },
+            'course2': {
+                'students': [
+                    {'surname': 'Johnson', 'name': 'Michael'},
+                    {'surname': 'Brown', 'name': 'Emily'}
+                ]
+            }
+        }
+        self.storage = FileStorage(self.data, self.FILE_PATH)
+
+    def tearDown(self):
+        if os.path.exists(self.FILE_PATH):
+            os.remove(self.FILE_PATH)
+
+    def test_save_and_load_from_file(self):
+        self.storage.save()
+
+        self.assertTrue(os.path.exists(self.FILE_PATH))
+
+        loaded_storage = FileStorage.load_from_file(self.FILE_PATH)
+
+        self.assertEqual(loaded_storage.data, self.data)
 
 
 class PaginationTest(unittest.TestCase):
@@ -15,7 +49,6 @@ class PaginationTest(unittest.TestCase):
 
         self.assertEqual(next(pagination), [4])
         pagination.next()
-
 
         pagination.prev()
         self.assertEqual(next(pagination), [1, 2, 3])
@@ -44,29 +77,62 @@ class PaginationTest(unittest.TestCase):
         pagination.prev()
         self.assertEqual(next(pagination), [4, 5, 6])
 
-# class TestFileStorage(unittest.TestCase):
-#     def setUp(self):
-#         self.temp_file = NamedTemporaryFile(delete=False)
-#         self.file_path = self.temp_file.name
-#
-#     def tearDown(self):
-#         self.temp_file.close()
-#         os.remove(self.file_path)
-#
-#     def test_load_from_file(self):
-#         # Перевірка, чи коректно завантажуються дані з файлу
-#         data = {
-#             'course1': {'students': [{'surname': 'Smith', 'name': 'John'}, {'surname': 'Doe', 'name': 'Jane'}]},
-#             'course2': {'students': [{'surname': 'Johnson', 'name': 'Robert'}, {'surname': 'Brown', 'name': 'Emily'}]}
-#         }
-#         # Запис даних у тимчасовий файл
-#         with open(self.file_path, 'w') as file:
-#             file.write(json.dumps(data))
-#         # Завантаження даних з файлу
-#         storage = FileStorage.load_from_file(self.file_path)
-#         # Перевірка, чи збережені дані відповідають очікуваним
-#         self.assertEqual(storage.data, data)
 
+class TestApp(unittest.TestCase):
+
+    def setUp(self):
+        self.file_path = 'test_data.json'
+        self.storage = FileStorage.load_from_file(self.file_path)
+        self.app = App(self.storage)
+
+    def tearDown(self):
+        self.storage.save()
+
+    def test_add_course(self):
+        course_name = 'Math'
+        self.app.add_course(course_name)
+        self.assertIn(course_name, self.storage.data)
+        self.assertEqual(self.storage.data[course_name]['students'], [])
+
+    def test_show_courses(self):
+        courses = ['Math', 'Physics', 'Chemistry']
+        self.storage.data.update({course: {'students': []} for course in courses})
+        with patch('builtins.input', side_effect=['2', '3']):
+            with patch('sys.stdout', new=StringIO()) as fake_out:
+                self.app.show_courses()
+                output = fake_out.getvalue().strip()
+                expected_output = 'Courses (page 1):\nMath\nPhysics\nChemistry\nMenu:\n1 - Previous page\n2 - Next page\n3 - Back to main menu'
+                self.assertIn(expected_output, output)
+
+    def test_add_student(self):
+        course_name = 'Math'
+        student_surname = 'Smith'
+        student_name = 'John'
+
+        with patch('builtins.input', side_effect=[1, student_surname, student_name]):
+            self.app.add_student(course_name)
+
+        self.assertEqual(self.storage.data[course_name]['students'][0].surname, student_surname)
+        self.assertEqual(self.storage.data[course_name]['students'][0].name, student_name)
+
+    def test_show_students(self):
+        course_name = 'Math'
+        students = [
+            {'surname': 'Smith', 'name': 'John'},
+            {'surname': 'Doe', 'name': 'Jane'},
+            {'surname': 'Johnson', 'name': 'Michael'},
+            {'surname': 'Brown', 'name': 'Emily'},
+            {'surname': 'Davis', 'name': 'Jessica'},
+            {'surname': 'Taylor', 'name': 'David'}
+        ]
+        self.storage.data[course_name]['students'] = [Student(s['surname'], s['name']) for s in students]
+
+        with patch('builtins.input', side_effect=['2', '3']):
+            with patch('sys.stdout', new=StringIO()) as fake_out:
+                self.app.show_students(course_name)
+                output = fake_out.getvalue().strip()
+                expected_output = 'Students in Math (page 1):\nSmith John\nDoe Jane\nJohnson Michael\nMenu:\n1 - Previous page\n2 - Next page\n3 - Back to main menu'
+                self.assertIn(expected_output, output)
 
 if __name__ == '__main__':
     unittest.main()
