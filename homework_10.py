@@ -24,8 +24,6 @@ class Pagination:
         start_index = self.current_page * self.page_size
         end_index = start_index + self.page_size
         page_items = self.items[start_index:end_index]
-        # if not page_items:
-        #     raise StopIteration
 
         return page_items
 
