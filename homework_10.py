@@ -37,10 +37,12 @@ class Pagination:
         if self.current_page < self.total_pages - 1:
             self.current_page += 1
 
+
 class Student:
     def __init__(self, surname, name):
         self.surname = surname
         self.name = name
+
 
 
 class Course:
@@ -73,7 +75,7 @@ class FileStorage:
 
     def save(self):
         for course_data in self.data.values():
-            course_data['students'] = [s.__dict__ for s in course_data.get('students', [])]
+            course_data['students'] = [s.__dict__ for s in course_data.get('students', []) if isinstance(s, Student)]
         with open(self.file_path, 'w') as file:
             json.dump(self.data, file, default=lambda x: list(x) if isinstance(x, set) else x)
 
