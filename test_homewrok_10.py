@@ -101,7 +101,8 @@ class TestApp(unittest.TestCase):
             with patch('sys.stdout', new=StringIO()) as fake_out:
                 self.app.show_courses()
                 output = fake_out.getvalue().strip()
-                expected_output = 'Courses (page 1):\nMath\nPhysics\nChemistry\nMenu:\n1 - Previous page\n2 - Next page\n3 - Back to main menu'
+                expected_output = 'Courses (page 1):\nMath\nPhysics\nChemistry\nMenu:\n1 ' \
+                                  '- Previous page\n2 - Next page\n3 - Back to main menu'
                 self.assertIn(expected_output, output)
 
     def test_add_student(self):
@@ -131,8 +132,10 @@ class TestApp(unittest.TestCase):
             with patch('sys.stdout', new=StringIO()) as fake_out:
                 self.app.show_students(course_name)
                 output = fake_out.getvalue().strip()
-                expected_output = 'Students in Math (page 1):\nSmith John\nDoe Jane\nJohnson Michael\nMenu:\n1 - Previous page\n2 - Next page\n3 - Back to main menu'
+                expected_output = 'Students in Math (page 1):\nSmith John\nDoe Jane\nJohnson Michael\nMenu:\n1 ' \
+                                  '- Previous page\n2 - Next page\n3 - Back to main menu'
                 self.assertIn(expected_output, output)
+
 
 if __name__ == '__main__':
     unittest.main()
