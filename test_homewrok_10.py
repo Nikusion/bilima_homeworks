@@ -10,20 +10,16 @@ class PaginationTest(unittest.TestCase):
         items = [1, 2, 3, 4]
         pagination = Pagination(items)
 
-        # Перший виклик повинен повернути [1, 2, 3]
         self.assertEqual(next(pagination), [1, 2, 3])
         pagination.next()
 
-        # Другий виклик повинен повернути [4]
         self.assertEqual(next(pagination), [4])
         pagination.next()
 
 
-        # Перехід на попередню сторінку повинен повернути [1, 2, 3]
         pagination.prev()
         self.assertEqual(next(pagination), [1, 2, 3])
 
-        # Перехід на попередню сторінку повинен повернути знову [1, 2, 3]
         pagination.prev()
         self.assertEqual(next(pagination), [1, 2, 3])
 
@@ -31,25 +27,20 @@ class PaginationTest(unittest.TestCase):
         items = []
         pagination = Pagination(items)
 
-        # Виклик повинен повернути порожній список
         self.assertEqual(next(pagination), [])
 
     def test_pagination_with_multiple_of_3_items(self):
         items = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
         pagination = Pagination(items)
 
-        # Перший виклик повинен повернути [1, 2, 3]
         self.assertEqual(next(pagination), [1, 2, 3])
         pagination.next()
 
-        # Другий виклик повинен повернути [4, 5, 6]
         self.assertEqual(next(pagination), [4, 5, 6])
         pagination.next()
 
-        # Третій виклик повинен повернути [7, 8, 9]
         self.assertEqual(next(pagination), [7, 8, 9])
 
-        # Перехід на попередню сторінку повинен повернути [4, 5, 6]
         pagination.prev()
         self.assertEqual(next(pagination), [4, 5, 6])
 
