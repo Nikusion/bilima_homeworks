@@ -24,8 +24,8 @@ class Pagination:
         start_index = self.current_page * self.page_size
         end_index = start_index + self.page_size
         page_items = self.items[start_index:end_index]
-        if not page_items:
-            raise StopIteration
+        # if not page_items:
+        #     raise StopIteration
 
         return page_items
 
@@ -36,7 +36,6 @@ class Pagination:
     def next(self):
         if self.current_page < self.total_pages - 1:
             self.current_page += 1
-
 
 class Student:
     def __init__(self, surname, name):
@@ -69,16 +68,12 @@ class FileStorage:
         except FileNotFoundError:
             data = {}
         for course_data in data.values():
-            course_data['students'] = [
-                {'surname': student['surname'], 'name': student['name']} for student in course_data.get('students', [])
-            ]
+            course_data['students'] = [Student(s['surname'], s['name']) for s in course_data.get('students', [])]
         return FileStorage(data, file_path)
 
     def save(self):
         for course_data in self.data.values():
-            course_data['students'] = [
-                {'surname': student['surname'], 'name': student['name']} for student in course_data.get('students', [])
-            ]
+            course_data['students'] = [s.__dict__ for s in course_data.get('students', [])]
         with open(self.file_path, 'w') as file:
             json.dump(self.data, file, default=lambda x: list(x) if isinstance(x, set) else x)
 
@@ -117,7 +112,11 @@ class App:
         while True:
             try:
                 print(f"Courses (page {paginator.current_page + 1}):")
-                for course_name in next(paginator):
+                page_courses = next(paginator)
+                if not page_courses:
+                    print('No more pages!')
+                    break
+                for course_name in page_courses:
                     print(course_name)
                 print("Menu:")
                 print("1 - Previous page")
@@ -144,7 +143,11 @@ class App:
         while True:
             try:
                 print(f"Students in {course_name} (page {paginator.current_page + 1}):")
-                for surname, name in next(paginator):
+                page_students = next(paginator)
+                if not page_students:
+                    print('No more pages!')
+                    break
+                for surname, name in page_students:
                     print(f"{surname} {name}")
                 print("Menu:")
                 print("1 - Previous page")
@@ -160,8 +163,8 @@ class App:
                 else:
                     print("No such menu item. Try again!")
             except StopIteration:
-                print('Return to main menu.')
-                paginator.prev()
+                print('No more pages!')
+                break
 
     def run(self):
         while True:
