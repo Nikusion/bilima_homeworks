@@ -16,12 +16,17 @@ class Pagination:
         return self
 
     def __next__(self):
+        if self.current_page >= self.total_pages:
+            self.current_page = self.total_pages - 1
+        elif self.current_page < 0:
+            self.current_page = 0
+
         start_index = self.current_page * self.page_size
         end_index = start_index + self.page_size
         page_items = self.items[start_index:end_index]
         if not page_items:
             raise StopIteration
-        self.current_page += 1
+
         return page_items
 
     def prev(self):
@@ -29,7 +34,7 @@ class Pagination:
             self.current_page -= 1
 
     def next(self):
-        if self.current_page < len(self.items) // self.page_size:
+        if self.current_page < self.total_pages - 1:
             self.current_page += 1
 
 
@@ -64,12 +69,16 @@ class FileStorage:
         except FileNotFoundError:
             data = {}
         for course_data in data.values():
-            course_data['students'] = [Student(s['surname'], s['name']) for s in course_data.get('students', [])]
+            course_data['students'] = [
+                {'surname': student['surname'], 'name': student['name']} for student in course_data.get('students', [])
+            ]
         return FileStorage(data, file_path)
 
     def save(self):
         for course_data in self.data.values():
-            course_data['students'] = [s.__dict__ for s in course_data.get('students', [])]
+            course_data['students'] = [
+                {'surname': student['surname'], 'name': student['name']} for student in course_data.get('students', [])
+            ]
         with open(self.file_path, 'w') as file:
             json.dump(self.data, file, default=lambda x: list(x) if isinstance(x, set) else x)
 
@@ -96,7 +105,6 @@ class App:
                         student = Student(surname, name)
                         course.add_student(student)
                     self.file_storage.data[course_name]['students'] = course.students
-                    self.file_storage.save()
                     break
                 else:
                     print("The number of students must be greater than or equal to 1.")
@@ -131,7 +139,7 @@ class App:
     def show_students(self, course_name):
         course = self.file_storage.data[course_name]
         students = course.get('students', [])
-        student_list = [(student['surname'], student['name']) for student in students]
+        student_list = [(student.surname, student.name) for student in students]
         paginator = Pagination(student_list)
         while True:
             try:
@@ -152,8 +160,8 @@ class App:
                 else:
                     print("No such menu item. Try again!")
             except StopIteration:
-                print('No more pages!')
-                break
+                print('Return to main menu.')
+                paginator.prev()
 
     def run(self):
         while True:
@@ -183,6 +191,7 @@ class App:
                         continue
                     self.show_students(course_name)
                 elif choice == 5:
+                    self.file_storage.save()
                     break
                 else:
                     print("No such menu item. Try again!")
