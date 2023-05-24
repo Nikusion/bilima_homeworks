@@ -16,24 +16,23 @@ class Pagination:
         return self
 
     def __next__(self):
-        if self.current_page >= self.total_pages:
-            self.current_page = self.total_pages - 1
-        elif self.current_page < 0:
-            self.current_page = 0
+        start = self.current_page * self.page_size
+        end = start + self.page_size
 
-        start_index = self.current_page * self.page_size
-        end_index = start_index + self.page_size
-        page_items = self.items[start_index:end_index]
+        if start >= len(self.items):
+            return []
 
+        page_items = self.items[start:end]
         return page_items
-
-    def prev(self):
-        if self.current_page > 0:
-            self.current_page -= 1
 
     def next(self):
         if self.current_page < self.total_pages - 1:
             self.current_page += 1
+
+    def prev(self):
+        self.current_page -= 1
+        if self.current_page < 0:
+            self.current_page = 0
 
 
 class Student:

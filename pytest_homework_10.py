@@ -1,14 +1,14 @@
-import unittest
+import pytest
 from homework_10 import Pagination, FileStorage, Student, Course, App
 import os
 from unittest.mock import patch
 from io import StringIO
 
 
-class FileStorageTest(unittest.TestCase):
+class TestFileStorage:
     FILE_PATH = 'test_file.json'
 
-    def setUp(self):
+    def setup_method(self, method):
         self.data = {
             'course1': {
                 'students': [
@@ -25,67 +25,66 @@ class FileStorageTest(unittest.TestCase):
         }
         self.storage = FileStorage(self.data, self.FILE_PATH)
 
-    def tearDown(self):
+    def teardown_method(self, method):
         if os.path.exists(self.FILE_PATH):
             os.remove(self.FILE_PATH)
 
     def test_save_and_load_from_file(self):
         self.storage.save()
 
-        self.assertTrue(os.path.exists(self.FILE_PATH))
+        assert os.path.exists(self.FILE_PATH)
 
         loaded_storage = FileStorage.load_from_file(self.FILE_PATH)
 
-        self.assertEqual(loaded_storage.data, self.data)
+        assert loaded_storage.data == self.data
 
 
-class PaginationTest(unittest.TestCase):
+class TestPagination:
     def test_pagination_with_4_items(self):
         items = [1, 2, 3, 4]
         pagination = Pagination(items)
 
-        self.assertEqual(next(pagination), [1, 2, 3])
+        assert next(pagination) == [1, 2, 3]
         pagination.next()
-        self.assertEqual(next(pagination), [4])
+        assert next(pagination) == [4]
         pagination.prev()
-        self.assertEqual(next(pagination), [1, 2, 3])
+        assert next(pagination) == [1, 2, 3]
         pagination.prev()
-        self.assertEqual(next(pagination), [1, 2, 3])
+        assert next(pagination) == [1, 2, 3]
 
     def test_pagination_with_empty_list(self):
         items = []
         pagination = Pagination(items)
 
-        self.assertEqual(next(pagination), [])
+        assert next(pagination) == []
 
     def test_pagination_with_multiple_of_3_items(self):
         items = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
         pagination = Pagination(items)
 
-        self.assertEqual(next(pagination), [1, 2, 3])
+        assert next(pagination) == [1, 2, 3]
         pagination.next()
-        self.assertEqual(next(pagination), [4, 5, 6])
+        assert next(pagination) == [4, 5, 6]
         pagination.next()
-        self.assertEqual(next(pagination), [7, 8, 9])
+        assert next(pagination) == [7, 8, 9]
         pagination.prev()
-        self.assertEqual(next(pagination), [4, 5, 6])
+        assert next(pagination) == [4, 5, 6]
 
 
-class TestApp(unittest.TestCase):
-
-    def setUp(self):
+class TestApp:
+    def setup_method(self, method):
         self.file_path = 'test_data.json'
         self.storage = FileStorage.load_from_file(self.file_path)
         self.app = App(self.storage)
 
-    def tearDown(self):
+    def teardown_method(self, method):
         self.storage.save()
 
     def test_add_course(self):
         course_name = 'Math'
         self.app.add_course(course_name)
-        self.assertIn(course_name, self.storage.data)
-        self.assertEqual(self.storage.data[course_name]['students'], [])
+        assert course_name in self.storage.data
+        assert self.storage.data[course_name]['students'] == []
 
     def test_show_courses(self):
         courses = ['Math', 'Physics', 'Chemistry']
@@ -96,7 +95,7 @@ class TestApp(unittest.TestCase):
                 output = fake_out.getvalue().strip()
                 expected_output = 'Courses (page 1):\nMath\nPhysics\nChemistry\nMenu:\n1 ' \
                                   '- Previous page\n2 - Next page\n3 - Back to main menu'
-                self.assertIn(expected_output, output)
+                assert expected_output in output
 
     def test_add_student(self):
         course_name = 'Math'
@@ -106,8 +105,8 @@ class TestApp(unittest.TestCase):
         with patch('builtins.input', side_effect=[1, student_surname, student_name]):
             self.app.add_student(course_name)
 
-        self.assertEqual(self.storage.data[course_name]['students'][0].surname, student_surname)
-        self.assertEqual(self.storage.data[course_name]['students'][0].name, student_name)
+        assert self.storage.data[course_name]['students'][0].surname == student_surname
+        assert self.storage.data[course_name]['students'][0].name == student_name
 
     def test_show_students(self):
         course_name = 'Math'
@@ -127,8 +126,8 @@ class TestApp(unittest.TestCase):
                 output = fake_out.getvalue().strip()
                 expected_output = 'Students in Math (page 1):\nSmith John\nDoe Jane\nJohnson Michael\nMenu:\n1 ' \
                                   '- Previous page\n2 - Next page\n3 - Back to main menu'
-                self.assertIn(expected_output, output)
+                assert expected_output in output
 
 
 if __name__ == '__main__':
-    unittest.main()
+    pytest.main()
