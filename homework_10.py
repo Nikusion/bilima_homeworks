@@ -81,6 +81,7 @@ class Course:
                     print("Input must be an integer!")
 
 
+
 class FileStorage:
     def __init__(self, data, file_path):
         self.data = data
