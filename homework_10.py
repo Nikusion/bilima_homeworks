@@ -42,7 +42,6 @@ class Student:
         self.name = name
 
 
-
 class Course:
     def __init__(self, name):
         self.name = name
@@ -53,6 +52,33 @@ class Course:
 
     def get_student_list(self):
         return [(student.surname, student.name) for student in self.students]
+
+    def delete_student(self, student_name):
+        indices = []
+        for i, student in enumerate(self.students):
+            if student.surname == student_name or student.name == student_name:
+                indices.append(i)
+        if len(indices) == 0:
+            print(f"No student with the name '{student_name}' found in the course '{self.name}'.")
+        elif len(indices) == 1:
+            del self.students[indices[0]]
+            print(f"Student '{student_name}' deleted from the course '{self.name}'.")
+        else:
+            print(f"Multiple students found with the name '{student_name}' in the course '{self.name}'.")
+            print("Select the student to delete by its index:")
+            for j, index in enumerate(indices):
+                print(f"{j + 1}. {student.surname} {student.name}")
+            while True:
+                try:
+                    choice = int(input("Enter the index of the student to delete: "))
+                    if 1 <= choice <= len(indices):
+                        del self.students[indices[choice-1]]
+                        print(f"Student at index {indices[choice-1]} deleted from the course '{self.name}'.")
+                        break
+                    else:
+                        print("Invalid index. Try again!")
+                except ValueError:
+                    print("Input must be an integer!")
 
 
 class FileStorage:
@@ -166,6 +192,23 @@ class App:
                 print('No more pages!')
                 break
 
+    def delete_course(self, course_name):
+        if course_name in self.file_storage.data:
+            del self.file_storage.data[course_name]
+            self.file_storage.save()
+            print(f"Course '{course_name}' deleted.")
+        else:
+            print(f"Course '{course_name}' not found!")
+
+    def delete_student(self, course_name, student_name):
+        if course_name in self.file_storage.data:
+            course = Course(course_name)
+            course.students = self.file_storage.data[course_name].get('students', [])
+            course.delete_student(student_name)
+            self.file_storage.data[course_name]['students'] = course.students
+        else:
+            print(f"Course '{course_name}' not found!")
+
     def run(self):
         while True:
             try:
@@ -174,7 +217,9 @@ class App:
                 print("2 - Show courses")
                 print("3 - Add student to course")
                 print("4 - Show students in course")
-                print("5 - Exit")
+                print("5 - Delete course")
+                print("6 - Delete student from course")
+                print("7 - Exit")
                 choice = int(input("Choose menu item: "))
                 if choice == 1:
                     course_name = input("Enter course name: ")
@@ -194,15 +239,28 @@ class App:
                         continue
                     self.show_students(course_name)
                 elif choice == 5:
+                    course_name = input("Enter course name: ")
+                    self.delete_course(course_name)
+                elif choice == 6:
+                    course_name = input("Enter course name: ")
+                    student_name = input("Enter student name: ")
+                    self.delete_student(course_name, student_name)
+                elif choice == 7:
                     self.file_storage.save()
                     break
                 else:
                     print("No such menu item. Try again!")
             except ValueError:
-                print("Input must be integer!")
+                print("Input must be an integer!")
 
 
 if __name__ == '__main__':
-    file_path = input('Enter storage path: ')
+    print('You can create a new file/use your file or use an existing test.json file.')
+    print('Do you want to create a new file/use your file?')
+    choice = input('Enter "y" if yes and "n" if no: ')
+    if choice == 'y':
+        file_path = input('Enter storage path: ')
+    elif choice == 'n':
+        file_path = 'test.json'
     app = App(FileStorage.load_from_file(file_path))
     app.run()
