@@ -39,7 +39,6 @@ class TestFileStorage:
         assert loaded_storage.data == self.data
 
 
-
 class TestPagination:
     def test_pagination_with_4_items(self):
         items = [1, 2, 3, 4]
@@ -67,6 +66,7 @@ class TestPagination:
         assert next(pagination) == [7, 8, 9]
         pagination.prev()
         assert next(pagination) == [4, 5, 6]
+
 
 class TestApp:
 
