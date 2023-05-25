@@ -16,21 +16,26 @@ class Pagination:
         return self
 
     def __next__(self):
+        if not self.items:
+            return []
         start = self.current_page * self.page_size
         end = start + self.page_size
 
         if start >= len(self.items):
-            return []
+            raise StopIteration
 
         page_items = self.items[start:end]
+        self.current_page += 1
         return page_items
 
     def next(self):
-        if self.current_page < self.total_pages - 1:
-            self.current_page += 1
+        if self.current_page >= self.total_pages - 1:
+            return self.items[(self.total_pages - 1) * self.page_size:]
+        else:
+            self.current_page = self.current_page
 
     def prev(self):
-        self.current_page -= 1
+        self.current_page -= 2
         if self.current_page < 0:
             self.current_page = 0
 
@@ -108,7 +113,11 @@ class App:
         self.file_storage = file_storage
 
     def add_course(self, course_name):
-        self.file_storage.data[course_name] = {'students': []}
+        if course_name in self.file_storage.data:
+            print(f"Course '{course_name}' already exists!")
+        else:
+            self.file_storage.data[course_name] = {'students': []}
+            print(f"Course '{course_name}' added.")
 
     def add_student(self, course_name):
         course_data = self.file_storage.data[course_name]
@@ -157,7 +166,7 @@ class App:
                     print("No such menu item. Try again!")
             except StopIteration:
                 print('No more pages!')
-                break
+                paginator.current_page = paginator.current_page - 1
 
     def show_students(self, course_name):
         course = self.file_storage.data[course_name]
@@ -188,7 +197,7 @@ class App:
                     print("No such menu item. Try again!")
             except StopIteration:
                 print('No more pages!')
-                break
+                paginator.current_page = paginator.current_page - 1
 
     def delete_course(self, course_name):
         if course_name in self.file_storage.data:
