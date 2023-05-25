@@ -109,7 +109,6 @@ class App:
 
     def add_course(self, course_name):
         self.file_storage.data[course_name] = {'students': []}
-        self.file_storage.save()
 
     def add_student(self, course_name):
         course_data = self.file_storage.data[course_name]
